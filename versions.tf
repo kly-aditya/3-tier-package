@@ -21,7 +21,7 @@ provider "aws" {
       Environment = var.environment
       ManagedBy   = "Terraform"
       Package     = "Package3-Production-3AZ"
-      Owner       = var.owner_email
+      #Owner       = var.owner_email
     }
   }
 }

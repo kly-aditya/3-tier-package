@@ -39,16 +39,16 @@ variable "aws_region" {
   }
 }
 
-variable "owner_email" {
-  description = "Email address of the infrastructure owner (for tagging and notifications)"
-  type        = string
-  default     = "devops@example.com"
+# variable "owner_email" {
+#description = "Email address of the infrastructure owner (for tagging and notifications)"
+#type        = string
+#default     = "devops@example.com"
 
-  validation {
-    condition     = can(regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", var.owner_email))
-    error_message = "Owner email must be a valid email address."
-  }
-}
+#validation {
+# condition     = can(regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", var.owner_email))
+#error_message = "Owner email must be a valid email address."
+# }
+#}
 
 # ----------------------------------------------------------------------------
 # Network Configuration (for Phase 1)
