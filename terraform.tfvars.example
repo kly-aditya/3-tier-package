@@ -1,0 +1,64 @@
+# ============================================================================
+# Terraform Variables - Example Template
+# ============================================================================
+# Copy this file to terraform.tfvars and fill in your actual values
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Project Configuration
+# ----------------------------------------------------------------------------
+
+project_name = "your-project-name"     # e.g., "mycompany-app"
+environment  = "production"            # production, staging, or development
+aws_region   = "ap-southeast-1"        # Singapore region
+owner_email  = "your-email@example.com"
+
+# ----------------------------------------------------------------------------
+# Network Configuration
+# ----------------------------------------------------------------------------
+
+vpc_cidr                 = "10.0.0.0/16"
+availability_zones_count = 3
+
+# ----------------------------------------------------------------------------
+# Feature Flags (for phased development)
+# ----------------------------------------------------------------------------
+
+enable_nat_gateway = false  # Set to true in Phase 2 (WARNING: Costs ~$100/month)
+enable_flow_logs   = true
+
+# ============================================================================
+# Variables to add in later phases:
+# ============================================================================
+
+# Phase 4: Bastion Host
+# key_name = "your-ssh-key-name"          # EC2 key pair name
+# admin_ip = "203.0.113.0/32"             # Your IP address for SSH access
+
+# Phase 5: RDS Database  
+# db_instance_class = "db.t3.medium"
+# db_name          = "productiondb"
+# db_username      = "dbadmin"
+# db_password      = "SecurePassword123!"  # Use AWS Secrets Manager in production!
+
+# Phase 6-8: Compute Tiers
+# web_tier_instance_type = "t3.medium"
+# web_tier_min_size      = 2
+# web_tier_max_size      = 10
+# web_tier_desired_size  = 2
+
+# app_tier_instance_type = "t3.medium"
+# app_tier_min_size      = 2
+# app_tier_max_size      = 10
+# app_tier_desired_size  = 2
+
+# bastion_instance_type = "t3.micro"
+
+# Phase 10: WAF
+# enable_waf      = true
+# waf_rate_limit  = 2000
+
+# Phase 11: Monitoring
+# cloudwatch_retention_days    = 30
+# enable_detailed_monitoring   = true
+# alarm_email                 = "alerts@example.com"
