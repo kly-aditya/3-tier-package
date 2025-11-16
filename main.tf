@@ -194,9 +194,118 @@ resource "aws_route_table_association" "public" {
 # NEXT PHASES (Not implemented yet):
 # ============================================================================
 # Phase 2: NAT Gateways (3x), Elastic IPs (3x), Private Route Tables
-# Phase 3: Security Groups (6x, empty rules)
-# Phase 4: Bastion Host module
-# Phase 5: RDS Database module
-# Phase 6-8: Compute tiers (Web & App)
-# Phase 9-13: Auto-scaling, WAF, Monitoring, etc.
+
+# ============================================================================
+# PHASE 2: NAT GATEWAYS & PRIVATE ROUTING
+# ============================================================================
+# Add this code to the END of your main.tf file
+# (after Phase 1 resources)
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Elastic IPs for NAT Gateways
+# ----------------------------------------------------------------------------
+
+resource "aws_eip" "nat" {
+  count  = var.enable_nat_gateway ? 3 : 0
+  domain = "vpc"
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.name_prefix}-nat-eip-${count.index + 1}"
+      AZ   = local.availability_zones[count.index]
+    }
+  )
+
+  depends_on = [aws_internet_gateway.main]
+}
+
+# ----------------------------------------------------------------------------
+# NAT Gateways (one per AZ)
+# ----------------------------------------------------------------------------
+
+resource "aws_nat_gateway" "main" {
+  count = var.enable_nat_gateway ? 3 : 0
+
+  allocation_id = aws_eip.nat[count.index].id
+  subnet_id     = aws_subnet.public[count.index].id
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.name_prefix}-nat-gateway-${count.index + 1}"
+      AZ   = local.availability_zones[count.index]
+    }
+  )
+
+  depends_on = [aws_internet_gateway.main]
+}
+
+# ----------------------------------------------------------------------------
+# Private Route Tables (one per AZ)
+# ----------------------------------------------------------------------------
+
+resource "aws_route_table" "private" {
+  count = var.enable_nat_gateway ? 3 : 0
+
+  vpc_id = aws_vpc.main.id
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.name_prefix}-private-rt-${count.index + 1}"
+      Type = "Private"
+      AZ   = local.availability_zones[count.index]
+    }
+  )
+}
+
+# ----------------------------------------------------------------------------
+# Routes to NAT Gateways
+# ----------------------------------------------------------------------------
+
+resource "aws_route" "private_nat_gateway" {
+  count = var.enable_nat_gateway ? 3 : 0
+
+  route_table_id         = aws_route_table.private[count.index].id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.main[count.index].id
+}
+
+# ----------------------------------------------------------------------------
+# Private App Subnet Route Table Associations
+# ----------------------------------------------------------------------------
+
+resource "aws_route_table_association" "private_app" {
+  count = var.enable_nat_gateway ? 3 : 0
+
+  subnet_id      = aws_subnet.private_app[count.index].id
+  route_table_id = aws_route_table.private[count.index].id
+}
+
+# ----------------------------------------------------------------------------
+# Private DB Subnet Route Table Associations
+# ----------------------------------------------------------------------------
+
+resource "aws_route_table_association" "private_db" {
+  count = var.enable_nat_gateway ? 3 : 0
+
+  subnet_id      = aws_subnet.private_db[count.index].id
+  route_table_id = aws_route_table.private[count.index].id
+}
+
+# ============================================================================
+# PHASE 2 COMPLETE
+# ============================================================================
+# Additional Resources Created:
+# - 3x Elastic IPs
+# - 3x NAT Gateways (one per AZ)
+# - 3x Private Route Tables
+# - 3x Routes to NAT Gateways
+# - 6x Route Table Associations (3 app + 3 db)
+#
+# Total Phase 2: ~12 resources
+# Cumulative Total: ~28 resources (16 + 12)
+# Cost: ~$100/month (NAT Gateways)
 # ============================================================================
