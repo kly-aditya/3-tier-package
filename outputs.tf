@@ -121,9 +121,52 @@ output "phase1_summary" {
 # Outputs to add in subsequent phases:
 # ============================================================================
 # Phase 2: NAT Gateway IDs, Elastic IPs, Private Route Table IDs
-# Phase 4: Bastion public IP, Bastion security group ID
-# Phase 5: RDS endpoint, read replica endpoint, RDS security group ID
-# Phase 7: Web ALB DNS name, Web ALB ARN
-# Phase 8: App ALB DNS name (internal), App ALB ARN
-# Phase 11: CloudWatch dashboard URLs
-# ============================================================================
+# ----------------------------------------------------------------------------
+
+output "nat_gateway_eips" {
+  description = "Elastic IPs assigned to NAT Gateways"
+  value       = var.enable_nat_gateway ? aws_eip.nat[*].public_ip : []
+}
+
+output "nat_gateway_eip_ids" {
+  description = "Allocation IDs of Elastic IPs for NAT Gateways"
+  value       = var.enable_nat_gateway ? aws_eip.nat[*].id : []
+}
+
+# ----------------------------------------------------------------------------
+# NAT Gateway IDs
+# ----------------------------------------------------------------------------
+
+output "nat_gateway_ids" {
+  description = "IDs of the NAT Gateways"
+  value       = var.enable_nat_gateway ? aws_nat_gateway.main[*].id : []
+}
+
+# ----------------------------------------------------------------------------
+# Private Route Tables
+# ----------------------------------------------------------------------------
+
+output "private_route_table_ids" {
+  description = "IDs of private route tables (one per AZ)"
+  value       = var.enable_nat_gateway ? aws_route_table.private[*].id : []
+}
+
+# ----------------------------------------------------------------------------
+# Phase 2 Summary
+# ----------------------------------------------------------------------------
+
+output "phase2_summary" {
+  description = "Summary of Phase 2 resources (NAT Gateways)"
+  value = var.enable_nat_gateway ? {
+    nat_gateways_count   = length(aws_nat_gateway.main)
+    nat_gateway_ips      = aws_eip.nat[*].public_ip
+    private_route_tables = length(aws_route_table.private)
+    monthly_cost_estimate = "~$100 (3 NAT Gateways @ ~$32/each)"
+  } : {
+    nat_gateways_count   = 0
+    nat_gateway_ips      = []
+    private_route_tables = 0
+    monthly_cost_estimate = "$0 (NAT Gateways disabled)"
+  }
+}
+
