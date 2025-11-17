@@ -348,3 +348,55 @@ module "bastion" {
   
   depends_on = [module.bastion_key_pair]
 }
+
+
+# PHASE 5: RDS DATABASE
+# ============================================================================
+# ADD THIS TO THE END OF YOUR EXISTING main.tf FILE:
+
+module "database" {
+  source = "./modules/database"
+
+  project_name              = var.project_name
+  environment               = var.environment
+  db_subnet_ids             = aws_subnet.private_db[*].id
+  database_security_group_id = module.security.database_security_group_id
+
+  # Database configuration
+  db_instance_class            = var.db_instance_class
+  db_name                      = var.db_name
+  db_master_username           = var.db_master_username
+  postgres_version             = var.postgres_version
+  postgres_major_version       = var.postgres_major_version
+  
+  # Storage
+  allocated_storage            = var.db_allocated_storage
+  max_allocated_storage        = var.db_max_allocated_storage
+  storage_type                 = var.db_storage_type
+  
+  # High Availability
+  multi_az                     = var.db_multi_az
+  
+  # Backup
+  backup_retention_days        = var.db_backup_retention_days
+  backup_window                = var.db_backup_window
+  maintenance_window           = var.db_maintenance_window
+  skip_final_snapshot          = var.db_skip_final_snapshot
+  
+  # Monitoring
+  monitoring_interval                = var.db_monitoring_interval
+  performance_insights_enabled       = var.db_performance_insights_enabled
+  performance_insights_retention     = var.db_performance_insights_retention
+  log_retention_days                 = var.db_log_retention_days
+  
+  # Parameters
+  max_connections              = var.db_max_connections
+  log_statement                = var.db_log_statement
+  log_min_duration_ms          = var.db_log_min_duration_ms
+  
+  # Protection
+  deletion_protection          = var.db_deletion_protection
+  auto_minor_version_upgrade   = var.db_auto_minor_version_upgrade
+
+  tags = local.common_tags
+}

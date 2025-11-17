@@ -103,11 +103,174 @@ variable "my_ip" {
 
 # NO NEED for bastion_key_name variable - it's created automatically!
 
-# ============================================================================
-# More variables will be added in subsequent phases:
-# - Phase 3: Security Group variables
-# - Phase 4: Bastion Host variables
-# - Phase 5: RDS Database variables
+
+
+# Database Instance Configuration
+# ------------------------------------------------------------------------------
+
+variable "db_instance_class" {
+  description = "RDS instance class"
+  type        = string
+  default     = "db.t3.micro"
+}
+
+variable "db_name" {
+  description = "Name of the default database to create"
+  type        = string
+  default     = "appdb"
+}
+
+variable "db_master_username" {
+  description = "Master username for the database"
+  type        = string
+  default     = "dbadmin"
+}
+
+# ------------------------------------------------------------------------------
+# PostgreSQL Version
+# ------------------------------------------------------------------------------
+
+variable "postgres_version" {
+  description = "PostgreSQL engine version"
+  type        = string
+  default     = "15.8"
+}
+
+variable "postgres_major_version" {
+  description = "PostgreSQL major version for parameter group"
+  type        = string
+  default     = "15"
+}
+
+# ------------------------------------------------------------------------------
+# Storage Configuration
+# ------------------------------------------------------------------------------
+
+variable "db_allocated_storage" {
+  description = "Initial allocated storage in GB"
+  type        = number
+  default     = 20
+}
+
+variable "db_max_allocated_storage" {
+  description = "Maximum storage for autoscaling"
+  type        = number
+  default     = 100
+}
+
+variable "db_storage_type" {
+  description = "Storage type (gp3, gp2, io1)"
+  type        = string
+  default     = "gp3"
+}
+
+# ------------------------------------------------------------------------------
+# High Availability
+# ------------------------------------------------------------------------------
+
+variable "db_multi_az" {
+  description = "Enable Multi-AZ deployment"
+  type        = bool
+  default     = true
+}
+
+# ------------------------------------------------------------------------------
+# Backup Configuration
+# ------------------------------------------------------------------------------
+
+variable "db_backup_retention_days" {
+  description = "Number of days to retain automated backups"
+  type        = number
+  default     = 7
+}
+
+variable "db_backup_window" {
+  description = "Daily backup window (UTC)"
+  type        = string
+  default     = "03:00-04:00"
+}
+
+variable "db_maintenance_window" {
+  description = "Weekly maintenance window (UTC)"
+  type        = string
+  default     = "Mon:04:00-Mon:05:00"
+}
+
+variable "db_skip_final_snapshot" {
+  description = "Skip final snapshot when destroying (set to false for production)"
+  type        = bool
+  default     = true
+}
+
+# ------------------------------------------------------------------------------
+# Monitoring Configuration
+# ------------------------------------------------------------------------------
+
+variable "db_monitoring_interval" {
+  description = "Enhanced monitoring interval in seconds (0, 1, 5, 10, 15, 30, 60)"
+  type        = number
+  default     = 60
+}
+
+variable "db_performance_insights_enabled" {
+  description = "Enable Performance Insights"
+  type        = bool
+  default     = true
+}
+
+variable "db_performance_insights_retention" {
+  description = "Performance Insights retention period in days (7 or 731)"
+  type        = number
+  default     = 7
+}
+
+variable "db_log_retention_days" {
+  description = "CloudWatch log retention in days"
+  type        = number
+  default     = 7
+}
+
+# ------------------------------------------------------------------------------
+# Database Parameter Group Settings
+# ------------------------------------------------------------------------------
+
+variable "db_max_connections" {
+  description = "Maximum number of database connections"
+  type        = string
+  default     = "100"
+}
+
+variable "db_log_statement" {
+  description = "Log statement type (none, ddl, mod, all)"
+  type        = string
+  default     = "ddl"
+}
+
+variable "db_log_min_duration_ms" {
+  description = "Log queries taking longer than this (ms, -1 to disable)"
+  type        = string
+  default     = "1000"
+}
+
+# ------------------------------------------------------------------------------
+# Protection
+# ------------------------------------------------------------------------------
+
+variable "db_deletion_protection" {
+  description = "Enable deletion protection"
+  type        = bool
+  default     = false
+}
+
+variable "db_auto_minor_version_upgrade" {
+  description = "Automatically upgrade minor versions"
+  type        = bool
+  default     = true
+}
+
+
+
+
 # - Phase 6-8: Compute tier variables
 # - Phase 10: WAF variables
 # - Phase 11: Monitoring variables

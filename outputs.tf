@@ -287,3 +287,73 @@ output "phase4_summary" {
     note               = "Private key is in Terraform state - extract it immediately!"
   }
 }
+
+
+# RDS Instance Details
+# ------------------------------------------------------------------------------
+
+output "db_instance_endpoint" {
+  description = "RDS instance connection endpoint"
+  value       = module.database.db_instance_endpoint
+}
+
+output "db_instance_address" {
+  description = "RDS instance hostname"
+  value       = module.database.db_instance_address
+}
+
+output "db_instance_port" {
+  description = "RDS instance port"
+  value       = module.database.db_instance_port
+}
+
+output "db_name" {
+  description = "Name of the database"
+  value       = module.database.db_name
+}
+
+# ------------------------------------------------------------------------------
+# Secrets Manager
+# ------------------------------------------------------------------------------
+
+output "db_secret_arn" {
+  description = "ARN of the Secrets Manager secret containing database credentials"
+  value       = module.database.db_secret_arn
+}
+
+output "db_secret_name" {
+  description = "Name of the Secrets Manager secret"
+  value       = module.database.db_secret_name
+}
+
+# ------------------------------------------------------------------------------
+# Connection Information
+# ------------------------------------------------------------------------------
+
+output "db_connection_command" {
+  description = "Command to connect to database from bastion (password in Secrets Manager)"
+  value       = "psql -h ${module.database.db_instance_address} -U ${var.db_master_username} -d ${var.db_name}"
+}
+
+output "get_db_password_command" {
+  description = "AWS CLI command to retrieve database password from Secrets Manager"
+  value       = "aws secretsmanager get-secret-value --secret-id ${module.database.db_secret_name} --query SecretString --output text | jq -r .password"
+}
+
+# ------------------------------------------------------------------------------
+# Phase 5 Summary
+# ------------------------------------------------------------------------------
+
+output "phase5_summary" {
+  description = "Summary of Phase 5 deployment - RDS Database"
+  value = {
+    db_endpoint           = module.database.db_instance_endpoint
+    db_instance_class     = var.db_instance_class
+    multi_az              = module.database.multi_az
+    primary_az            = module.database.availability_zone
+    backup_retention_days = module.database.backup_retention_period
+    secrets_manager_arn   = module.database.db_secret_arn
+    cost_per_month        = "~$264 (db.t3.micro Multi-AZ)"
+    note                  = "Credentials stored in AWS Secrets Manager"
+  }
+}

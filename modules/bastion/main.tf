@@ -65,6 +65,12 @@ resource "aws_iam_role_policy_attachment" "bastion_cloudwatch" {
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
+# Secrets Manager read access
+resource "aws_iam_role_policy_attachment" "bastion_secrets_manager" {
+  role       = aws_iam_role.bastion.name
+  policy_arn = "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
+}
+
 # Instance profile
 resource "aws_iam_instance_profile" "bastion" {
   name_prefix = "${var.project_name}-${var.environment}-bastion-"
