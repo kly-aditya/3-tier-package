@@ -170,3 +170,49 @@ output "phase2_summary" {
   }
 }
 
+output "web_alb_security_group_id" {
+  description = "ID of the Web ALB security group"
+  value       = module.security.web_alb_security_group_id
+}
+
+output "web_security_group_id" {
+  description = "ID of the Web Tier security group"
+  value       = module.security.web_security_group_id
+}
+
+output "app_alb_security_group_id" {
+  description = "ID of the App ALB security group"
+  value       = module.security.app_alb_security_group_id
+}
+
+output "app_security_group_id" {
+  description = "ID of the App Tier security group"
+  value       = module.security.app_security_group_id
+}
+
+output "database_security_group_id" {
+  description = "ID of the Database security group"
+  value       = module.security.database_security_group_id
+}
+
+output "bastion_security_group_id" {
+  description = "ID of the Bastion security group"
+  value       = module.security.bastion_security_group_id
+}
+
+output "phase3_summary" {
+  description = "Summary of Phase 3 deployment - Security Groups"
+  value = {
+    security_groups_created = 6
+    cost_per_month         = "$0 (Security groups are free)"
+    web_alb_sg_id          = module.security.web_alb_security_group_id
+    web_sg_id              = module.security.web_security_group_id
+    app_alb_sg_id          = module.security.app_alb_security_group_id
+    app_sg_id              = module.security.app_security_group_id
+    database_sg_id         = module.security.database_security_group_id
+    bastion_sg_id          = module.security.bastion_security_group_id
+    note                   = "Security group rules will be added in Phases 4-8"
+  }
+}
+
+

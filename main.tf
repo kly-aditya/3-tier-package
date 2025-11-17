@@ -296,16 +296,13 @@ resource "aws_route_table_association" "private_db" {
 }
 
 # ============================================================================
-# PHASE 2 COMPLETE
-# ============================================================================
-# Additional Resources Created:
-# - 3x Elastic IPs
-# - 3x NAT Gateways (one per AZ)
-# - 3x Private Route Tables
-# - 3x Routes to NAT Gateways
-# - 6x Route Table Associations (3 app + 3 db)
-#
-# Total Phase 2: ~12 resources
-# Cumulative Total: ~28 resources (16 + 12)
-# Cost: ~$100/month (NAT Gateways)
-# ============================================================================
+
+module "security" {
+  source = "./modules/security"
+
+  project_name = var.project_name
+  environment  = var.environment
+  vpc_id       = aws_vpc.main.id
+
+  tags = local.common_tags
+}
