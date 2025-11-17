@@ -297,12 +297,54 @@ resource "aws_route_table_association" "private_db" {
 
 # ============================================================================
 
+
+# Phase 4: Bastion with Automated Key Pair
+
+# Step 1: Create SSH Key Pair (Automated!)
+module "bastion_key_pair" {
+  source  = "terraform-aws-modules/key-pair/aws"
+  version = "~> 2.0"
+
+  key_name           = "${var.project_name}-${var.environment}-bastion-key"
+  create_private_key = true
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name      = "${var.project_name}-${var.environment}-bastion-key"
+      Component = "bastion"
+      Phase     = "4"
+    }
+  )
+}
+
+# Step 2: Update security module to include bastion rules
+
 module "security" {
   source = "./modules/security"
 
-  project_name = var.project_name
-  environment  = var.environment
-  vpc_id       = aws_vpc.main.id
+  project_name     = var.project_name
+  environment      = var.environment
+  vpc_id           = aws_vpc.main.id
+  allowed_ssh_cidr = var.my_ip
 
   tags = local.common_tags
+}
+
+# Step 3: Deploy Bastion
+module "bastion" {
+  source = "./modules/bastion"
+
+  project_name              = var.project_name
+  environment               = var.environment
+  vpc_id                    = aws_vpc.main.id
+  public_subnet_ids         = [for subnet in aws_subnet.public : subnet.id]
+  bastion_security_group_id = module.security.bastion_security_group_id
+  instance_type             = "t3.micro"
+  key_name                  = module.bastion_key_pair.key_pair_name  # ← Automated!
+  allowed_ssh_cidr          = var.my_ip
+
+  tags = local.common_tags
+  
+  depends_on = [module.bastion_key_pair]
 }

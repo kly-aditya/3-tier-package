@@ -92,6 +92,17 @@ variable "enable_flow_logs" {
   default     = true
 }
 
+# Variables - Bastion Host (AUTOMATED KEY PAIR!)
+# ==============================================================================
+
+# Only need your IP - key pair is automatic!
+variable "my_ip" {
+  description = "Your IP address for SSH access to bastion (format: x.x.x.x/32)"
+  type        = string
+}
+
+# NO NEED for bastion_key_name variable - it's created automatically!
+
 # ============================================================================
 # More variables will be added in subsequent phases:
 # - Phase 3: Security Group variables

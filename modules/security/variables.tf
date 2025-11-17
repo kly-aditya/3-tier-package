@@ -19,8 +19,15 @@ variable "vpc_id" {
   type        = string
 }
 
+variable "allowed_ssh_cidr" {
+  description = "CIDR block allowed to SSH to bastion (your IP)"
+  type        = string
+  default     = "0.0.0.0/0"  # CHANGE THIS TO YOUR IP!
+}
+
 variable "tags" {
   description = "Common tags to apply to all security group resources"
   type        = map(string)
   default     = {}
 }
+

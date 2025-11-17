@@ -216,3 +216,74 @@ output "phase3_summary" {
 }
 
 
+# Phase 4 Outputs - Bastion with Automated Key Pair
+# ==============================================================================
+
+# Key Pair Outputs
+output "bastion_key_pair_name" {
+  description = "Name of the bastion key pair"
+  value       = module.bastion_key_pair.key_pair_name
+}
+
+output "bastion_private_key_pem" {
+  description = "Private key for bastion SSH access (SAVE THIS!)"
+  value       = module.bastion_key_pair.private_key_pem
+  sensitive   = true
+}
+
+# Bastion Outputs
+output "bastion_public_ip" {
+  description = "Public IP address of bastion host"
+  value       = module.bastion.bastion_eip
+}
+
+output "bastion_ssh_command" {
+  description = "SSH command to connect to bastion (after saving private key)"
+  value       = "ssh -i ~/.ssh/${var.project_name}-bastion-key.pem ec2-user@${module.bastion.bastion_eip}"
+}
+
+output "bastion_asg_name" {
+  description = "Name of bastion Auto Scaling Group"
+  value       = module.bastion.bastion_asg_name
+}
+
+# Instructions Output
+output "save_private_key_instructions" {
+  description = "How to save your private key and connect"
+  value       = <<-EOT
+    
+    ═══════════════════════════════════════════════════════════════
+    🔑 SAVE YOUR PRIVATE KEY (Do this immediately!)
+    ═══════════════════════════════════════════════════════════════
+    
+    Step 1: Save the private key to a file:
+    ──────────────────────────────────────
+    terraform output -raw bastion_private_key_pem > ~/.ssh/${var.project_name}-bastion-key.pem
+    
+    Step 2: Set correct permissions:
+    ────────────────────────────────
+    chmod 400 ~/.ssh/${var.project_name}-bastion-key.pem
+    
+    Step 3: Connect to bastion:
+    ───────────────────────────
+    ssh -i ~/.ssh/${var.project_name}-bastion-key.pem ec2-user@${module.bastion.bastion_eip}
+    
+    ⚠️  IMPORTANT: Save this key NOW! It's only available in Terraform state.
+    
+    ═══════════════════════════════════════════════════════════════
+  EOT
+}
+
+# Summary
+output "phase4_summary" {
+  description = "Summary of Phase 4 deployment"
+  value = {
+    bastion_public_ip  = module.bastion.bastion_eip
+    instance_type      = "t3.micro"
+    key_pair_name      = module.bastion_key_pair.key_pair_name
+    cost_per_month     = "~$8 (t3.micro)"
+    security_group_id  = module.security.bastion_security_group_id
+    ssh_access_from    = var.my_ip
+    note               = "Private key is in Terraform state - extract it immediately!"
+  }
+}
