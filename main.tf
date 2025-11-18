@@ -448,3 +448,35 @@ module "web_alb" {
 
   common_tags = local.common_tags
 }
+
+
+# PHASE 8: APPLICATION TIER
+# ==============================================================================
+
+module "app" {
+  source = "./modules/app"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  # Networking
+  private_app_subnet_ids = aws_subnet.private_app[*].id
+  app_sg_id              = module.security.app_security_group_id
+
+  # Database
+  db_secret_name = module.database.db_secret_name
+  db_endpoint    = module.database.db_instance_address
+  db_name        = module.database.db_name
+  db_username    = module.database.db_master_username
+
+  # Instance configuration
+  instance_type    = var.app_instance_type
+  root_volume_size = var.app_root_volume_size
+
+  # Auto Scaling
+  asg_min_size         = var.app_asg_min_size
+  asg_desired_capacity = var.app_asg_desired_capacity
+  asg_max_size         = var.app_asg_max_size
+
+  common_tags = local.common_tags
+}

@@ -446,3 +446,40 @@ output "web_alb_url" {
 }
 
 
+# PHASE 8: APPLICATION TIER
+# ==============================================================================
+
+output "app_launch_template_id" {
+  description = "ID of the app tier launch template"
+  value       = module.app.launch_template_id
+}
+
+output "app_launch_template_version" {
+  description = "Latest version of the app tier launch template"
+  value       = module.app.launch_template_latest_version
+}
+
+output "app_asg_id" {
+  description = "ID of the app tier Auto Scaling Group"
+  value       = module.app.autoscaling_group_id
+}
+
+output "app_asg_name" {
+  description = "Name of the app tier Auto Scaling Group"
+  value       = module.app.autoscaling_group_name
+}
+
+output "app_asg_arn" {
+  description = "ARN of the app tier Auto Scaling Group"
+  value       = module.app.autoscaling_group_arn
+}
+
+output "app_iam_role_name" {
+  description = "Name of the IAM role for app instances"
+  value       = module.app.iam_role_name
+}
+
+output "app_ami_id" {
+  description = "AMI ID used for app instances"
+  value       = module.app.ami_id
+}

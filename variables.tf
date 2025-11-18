@@ -359,3 +359,37 @@ variable "alb_stickiness_duration" {
   type        = number
   default     = 86400
 }
+
+
+# PHASE 8: APPLICATION TIER
+# ==============================================================================
+
+variable "app_instance_type" {
+  description = "Instance type for app tier instances"
+  type        = string
+  default     = "t3.small"
+}
+
+variable "app_root_volume_size" {
+  description = "Size of root volume for app instances in GB"
+  type        = number
+  default     = 30
+}
+
+variable "app_asg_min_size" {
+  description = "Minimum number of instances in app tier ASG"
+  type        = number
+  default     = 3
+}
+
+variable "app_asg_desired_capacity" {
+  description = "Desired number of instances in app tier ASG"
+  type        = number
+  default     = 3
+}
+
+variable "app_asg_max_size" {
+  description = "Maximum number of instances in app tier ASG"
+  type        = number
+  default     = 6
+}
