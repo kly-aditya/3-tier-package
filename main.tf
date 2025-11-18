@@ -36,9 +36,6 @@ locals {
   name_prefix = "${var.project_name}-${var.environment}"
 }
 
-# ============================================================================
-# PHASE 1: VPC & NETWORKING RESOURCES
-# ============================================================================
 
 # ----------------------------------------------------------------------------
 # VPC
@@ -186,23 +183,11 @@ resource "aws_route_table_association" "public" {
 # - 1x Route to Internet Gateway
 # - 3x Route Table Associations
 #
-# Total: ~15 resources
-# Cost: $0 (VPC and subnets are free!)
-# ============================================================================
 
-# ============================================================================
-# NEXT PHASES (Not implemented yet):
-# ============================================================================
 # Phase 2: NAT Gateways (3x), Elastic IPs (3x), Private Route Tables
 
 # ============================================================================
-# PHASE 2: NAT GATEWAYS & PRIVATE ROUTING
-# ============================================================================
-# Add this code to the END of your main.tf file
-# (after Phase 1 resources)
-# ============================================================================
 
-# ----------------------------------------------------------------------------
 # Elastic IPs for NAT Gateways
 # ----------------------------------------------------------------------------
 
@@ -399,4 +384,31 @@ module "database" {
   auto_minor_version_upgrade   = var.db_auto_minor_version_upgrade
 
   tags = local.common_tags
+}
+
+
+# ==============================================================================
+# PHASE 6: WEB TIER MODULE
+# ==============================================================================
+
+module "web" {
+  source = "./modules/web"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  # Networking
+  public_subnet_ids = aws_subnet.public[*].id
+  web_sg_id         = module.security.web_security_group_id
+
+  # Instance configuration
+  instance_type     = var.web_instance_type
+  root_volume_size  = var.web_root_volume_size
+
+  # Auto Scaling
+  asg_min_size         = var.web_asg_min_size
+  asg_desired_capacity = var.web_asg_desired_capacity
+  asg_max_size         = var.web_asg_max_size
+
+  common_tags = local.common_tags
 }

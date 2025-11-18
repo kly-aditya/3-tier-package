@@ -117,8 +117,7 @@ output "phase1_summary" {
   }
 }
 
-# ============================================================================
-# Outputs to add in subsequent phases:
+
 # ============================================================================
 # Phase 2: NAT Gateway IDs, Elastic IPs, Private Route Table IDs
 # ----------------------------------------------------------------------------
@@ -356,4 +355,48 @@ output "phase5_summary" {
     cost_per_month        = "~$264 (db.t3.micro Multi-AZ)"
     note                  = "Credentials stored in AWS Secrets Manager"
   }
+}
+
+# ------------------------------------------------------------------------------
+# PHASE 6: WEB TIER
+# ------------------------------------------------------------------------------
+
+output "web_launch_template_id" {
+  description = "ID of the web tier launch template"
+  value       = module.web.launch_template_id
+}
+
+output "web_launch_template_version" {
+  description = "Latest version of the web tier launch template"
+  value       = module.web.launch_template_latest_version
+}
+
+output "web_asg_id" {
+  description = "ID of the web tier Auto Scaling Group"
+  value       = module.web.autoscaling_group_id
+}
+
+output "web_asg_name" {
+  description = "Name of the web tier Auto Scaling Group"
+  value       = module.web.autoscaling_group_name
+}
+
+output "web_asg_arn" {
+  description = "ARN of the web tier Auto Scaling Group"
+  value       = module.web.autoscaling_group_arn
+}
+
+output "web_iam_role_name" {
+  description = "Name of the IAM role for web instances"
+  value       = module.web.iam_role_name
+}
+
+output "web_ami_id" {
+  description = "AMI ID used for web instances"
+  value       = module.web.ami_id
+}
+
+output "web_sg_id" {
+  description = "ID of the Web tier security group"
+  value       = module.security.web_security_group_id
 }

@@ -269,9 +269,38 @@ variable "db_auto_minor_version_upgrade" {
 }
 
 
+# ------------------------------------------------------------------------------
+# PHASE 6: WEB TIER
+# ------------------------------------------------------------------------------
+
+variable "web_instance_type" {
+  description = "Instance type for web tier instances"
+  type        = string
+  default     = "t3.small"
+}
+
+variable "web_root_volume_size" {
+  description = "Size of root volume for web instances in GB"
+  type        = number
+  default     = 30
+}
+
+variable "web_asg_min_size" {
+  description = "Minimum number of instances in web tier ASG"
+  type        = number
+  default     = 3
+}
+
+variable "web_asg_desired_capacity" {
+  description = "Desired number of instances in web tier ASG"
+  type        = number
+  default     = 3
+}
+
+variable "web_asg_max_size" {
+  description = "Maximum number of instances in web tier ASG"
+  type        = number
+  default     = 6
+}
 
 
-# - Phase 6-8: Compute tier variables
-# - Phase 10: WAF variables
-# - Phase 11: Monitoring variables
-# ============================================================================
