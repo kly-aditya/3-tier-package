@@ -303,4 +303,59 @@ variable "web_asg_max_size" {
   default     = 6
 }
 
+# PHASE 7: WEB APPLICATION LOAD BALANCER
+# ==============================================================================
 
+variable "alb_enable_deletion_protection" {
+  description = "Enable deletion protection for Web ALB"
+  type        = bool
+  default     = false
+}
+
+variable "alb_health_check_path" {
+  description = "Health check path for target group"
+  type        = string
+  default     = "/health"
+}
+
+variable "alb_health_check_interval" {
+  description = "Health check interval in seconds"
+  type        = number
+  default     = 30
+}
+
+variable "alb_health_check_timeout" {
+  description = "Health check timeout in seconds"
+  type        = number
+  default     = 5
+}
+
+variable "alb_health_check_healthy_threshold" {
+  description = "Number of consecutive successful health checks before marking instance healthy"
+  type        = number
+  default     = 2
+}
+
+variable "alb_health_check_unhealthy_threshold" {
+  description = "Number of consecutive failed health checks before marking instance unhealthy"
+  type        = number
+  default     = 3
+}
+
+variable "alb_deregistration_delay" {
+  description = "Time in seconds to wait before deregistering a target"
+  type        = number
+  default     = 30
+}
+
+variable "alb_enable_stickiness" {
+  description = "Enable sticky sessions on target group"
+  type        = bool
+  default     = false
+}
+
+variable "alb_stickiness_duration" {
+  description = "Stickiness duration in seconds (1-604800)"
+  type        = number
+  default     = 86400
+}

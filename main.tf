@@ -412,3 +412,39 @@ module "web" {
 
   common_tags = local.common_tags
 }
+
+
+# PHASE 7: WEB APPLICATION LOAD BALANCER
+# ==============================================================================
+
+module "web_alb" {
+  source = "./modules/alb"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  # Networking
+  vpc_id             = aws_vpc.main.id
+  public_subnet_ids  = aws_subnet.public[*].id
+  web_alb_sg_id      = module.security.web_alb_security_group_id
+
+  # Auto Scaling Group
+  web_asg_name = module.web.autoscaling_group_name
+
+  # ALB Configuration
+  enable_deletion_protection = var.alb_enable_deletion_protection
+
+  # Health Check
+  health_check_path                = var.alb_health_check_path
+  health_check_interval            = var.alb_health_check_interval
+  health_check_timeout             = var.alb_health_check_timeout
+  health_check_healthy_threshold   = var.alb_health_check_healthy_threshold
+  health_check_unhealthy_threshold = var.alb_health_check_unhealthy_threshold
+  deregistration_delay             = var.alb_deregistration_delay
+
+  # Stickiness
+  enable_stickiness    = var.alb_enable_stickiness
+  stickiness_duration  = var.alb_stickiness_duration
+
+  common_tags = local.common_tags
+}

@@ -400,3 +400,49 @@ output "web_sg_id" {
   description = "ID of the Web tier security group"
   value       = module.security.web_security_group_id
 }
+
+
+# PHASE 7: WEB APPLICATION LOAD BALANCER
+# ==============================================================================
+
+output "web_alb_id" {
+  description = "ID of the Web Application Load Balancer"
+  value       = module.web_alb.alb_id
+}
+
+output "web_alb_arn" {
+  description = "ARN of the Web Application Load Balancer"
+  value       = module.web_alb.alb_arn
+}
+
+output "web_alb_dns_name" {
+  description = "DNS name of the Web Application Load Balancer"
+  value       = module.web_alb.alb_dns_name
+}
+
+output "web_alb_zone_id" {
+  description = "Zone ID of the Web Application Load Balancer"
+  value       = module.web_alb.alb_zone_id
+}
+
+output "web_target_group_id" {
+  description = "ID of the Web target group"
+  value       = module.web_alb.target_group_id
+}
+
+output "web_target_group_arn" {
+  description = "ARN of the Web target group"
+  value       = module.web_alb.target_group_arn
+}
+
+output "web_target_group_name" {
+  description = "Name of the Web target group"
+  value       = module.web_alb.target_group_name
+}
+
+output "web_alb_url" {
+  description = "URL to access the Web Application Load Balancer"
+  value       = "http://${module.web_alb.alb_dns_name}"
+}
+
+
