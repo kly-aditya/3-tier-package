@@ -95,6 +95,7 @@ resource "aws_launch_template" "web" {
   description   = "Launch template for web tier instances"
   image_id      = data.aws_ami.amazon_linux_2023.id
   instance_type = var.instance_type
+  key_name = var.ssh_key_name
 
   # IAM instance profile
   iam_instance_profile {

@@ -44,3 +44,19 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "s3_bucket_name" {
+  description = "S3 bucket containing SSH keys"
+  type        = string
+}
+
+variable "s3_key_prefix" {
+  description = "S3 prefix for SSH keys"
+  type        = string
+  default     = "ssh-keys"
+}
+
+variable "region" {
+  description = "AWS region"
+  type        = string
+}

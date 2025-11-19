@@ -1,18 +1,26 @@
-# Terraform
-.terraform/
-*.tfstate
-*.tfstate.*
-*.tfplan
-.terraform.lock.hcl
-
-# Sensitive files
-terraform.tfvars
+# SSH Keys - DO NOT COMMIT TO GIT
+keys/
 *.pem
 *.key
 
-# OS files
-.DS_Store
-
-# Logs
-*.log
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
 crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

@@ -92,3 +92,11 @@ variable "asg_max_size" {
   type        = number
   default     = 6
 }
+
+# SSH KEY VARIABLE
+# ============================================================================
+
+variable "ssh_key_name" {
+  description = "SSH key name for app tier instances"
+  type        = string
+}

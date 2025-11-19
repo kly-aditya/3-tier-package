@@ -221,12 +221,12 @@ output "phase3_summary" {
 # Key Pair Outputs
 output "bastion_key_pair_name" {
   description = "Name of the bastion key pair"
-  value       = module.bastion_key_pair.key_pair_name
+  value       = module.key_management.bastion_key_pair_name
 }
 
 output "bastion_private_key_pem" {
-  description = "Private key for bastion SSH access (SAVE THIS!)"
-  value       = module.bastion_key_pair.private_key_pem
+  description = "Private key in PEM format "
+  value       = module.key_management.bastion_private_key_pem
   sensitive   = true
 }
 
@@ -279,7 +279,7 @@ output "phase4_summary" {
   value = {
     bastion_public_ip  = module.bastion.bastion_eip
     instance_type      = "t3.micro"
-    key_pair_name      = module.bastion_key_pair.key_pair_name
+    key_pair_name      = module.key_management.bastion_key_pair_name
     cost_per_month     = "~$8 (t3.micro)"
     security_group_id  = module.security.bastion_security_group_id
     ssh_access_from    = var.my_ip
@@ -482,4 +482,27 @@ output "app_iam_role_name" {
 output "app_ami_id" {
   description = "AMI ID used for app instances"
   value       = module.app.ami_id
+}
+
+
+# SSH KEY MANAGEMENT OUTPUTS
+# ============================================================================
+
+output "ssh_keys_summary" {
+  description = "SSH keys information"
+  value = {
+    bastion_key = module.key_management.bastion_key_pair_name
+    web_key     = module.key_management.web_key_pair_name
+    app_key     = module.key_management.app_key_pair_name
+  }
+}
+
+output "ssh_keys_local_directory" {
+  description = "Local directory containing SSH private keys"
+  value       = module.key_management.local_keys_directory
+}
+
+output "ssh_keys_s3_locations" {
+  description = "S3 locations of SSH private keys"
+  value       = module.key_management.keys_s3_location
 }

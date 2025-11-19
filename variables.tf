@@ -103,6 +103,24 @@ variable "my_ip" {
 
 # NO NEED for bastion_key_name variable - it's created automatically!
 
+variable "s3_bucket_name" {
+  description = "S3 bucket name for storing SSH keys (customer pre-requisite)"
+  type        = string
+  default     = "klypup-sanbox-093667081182-pemfiles"
+}
+
+variable "s3_key_prefix" {
+  description = "S3 prefix for SSH keys"
+  type        = string
+  default     = "ssh-keys"
+}
+
+variable "region" {
+  description = "AWS region"
+  type        = string
+  default     = "ap-southeast-1"
+}
+
 
 
 # Database Instance Configuration

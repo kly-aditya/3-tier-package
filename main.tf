@@ -285,6 +285,7 @@ resource "aws_route_table_association" "private_db" {
 
 # Phase 4: Bastion with Automated Key Pair
 
+/*
 # Step 1: Create SSH Key Pair (Automated!)
 module "bastion_key_pair" {
   source  = "terraform-aws-modules/key-pair/aws"
@@ -302,9 +303,9 @@ module "bastion_key_pair" {
     }
   )
 }
+*/
 
 # Step 2: Update security module to include bastion rules
-
 module "security" {
   source = "./modules/security"
 
@@ -316,6 +317,21 @@ module "security" {
   tags = local.common_tags
 }
 
+# KEY MANAGEMENT - Separate SSH Keys for Each Tier
+# ============================================================================
+module "key_management" {
+  source = "./modules/key_management"
+  
+  project_name         = var.project_name
+  environment          = var.environment
+  s3_bucket_name       = var.s3_bucket_name
+  s3_key_prefix        = var.s3_key_prefix
+   bastion_iam_role_arn = "arn:aws:iam::123456789012:role/temp"
+  
+   
+}
+
+
 # Step 3: Deploy Bastion
 module "bastion" {
   source = "./modules/bastion"
@@ -326,13 +342,19 @@ module "bastion" {
   public_subnet_ids         = [for subnet in aws_subnet.public : subnet.id]
   bastion_security_group_id = module.security.bastion_security_group_id
   instance_type             = "t3.micro"
-  key_name                  = module.bastion_key_pair.key_pair_name  # ← Automated!
+  key_name                  = module.key_management.bastion_key_pair_name
   allowed_ssh_cidr          = var.my_ip
+
+  #   S3 key download configuration
+  s3_bucket_name = var.s3_bucket_name
+  s3_key_prefix  = var.s3_key_prefix
+  region         = var.region
 
   tags = local.common_tags
   
-  depends_on = [module.bastion_key_pair]
+  depends_on = [module.key_management]
 }
+
 
 
 # PHASE 5: RDS DATABASE
@@ -410,8 +432,17 @@ module "web" {
   asg_desired_capacity = var.web_asg_desired_capacity
   asg_max_size         = var.web_asg_max_size
 
+ssh_key_name = module.key_management.web_key_pair_name
+
   common_tags = local.common_tags
+  
+  depends_on = [
+    aws_nat_gateway.main,
+    module.security,
+    module.key_management  # Add this dependency
+  ]
 }
+
 
 
 # PHASE 7: WEB APPLICATION LOAD BALANCER
@@ -478,5 +509,15 @@ module "app" {
   asg_desired_capacity = var.app_asg_desired_capacity
   asg_max_size         = var.app_asg_max_size
 
+ssh_key_name = module.key_management.app_key_pair_name
+
   common_tags = local.common_tags
+  
+  depends_on = [
+    aws_nat_gateway.main,
+    module.security,
+    module.database,
+    module.key_management  # Add this dependency
+  ]
 }
+

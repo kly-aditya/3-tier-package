@@ -53,6 +53,58 @@ resource "aws_iam_role" "bastion" {
   )
 }
 
+#  IAM POLICY: S3 Access for SSH Keys
+# ============================================================================
+
+resource "aws_iam_role_policy" "bastion_s3_keys" {
+  name = "${var.project_name}-${var.environment}-bastion-s3-keys"
+  role = aws_iam_role.bastion.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "arn:aws:s3:::${var.s3_bucket_name}",
+          "arn:aws:s3:::${var.s3_bucket_name}/${var.s3_key_prefix}/web/*",
+          "arn:aws:s3:::${var.s3_bucket_name}/${var.s3_key_prefix}/app/*"
+        ]
+      }
+    ]
+  })
+}
+
+# ============================================================================
+# IAM POLICY: EC2 Describe for Helper Scripts
+# ============================================================================
+
+resource "aws_iam_role_policy" "bastion_ec2_describe" {
+  name = "${var.project_name}-${var.environment}-bastion-ec2-describe"
+  role = aws_iam_role.bastion.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:DescribeInstances",
+          "ec2:DescribeInstanceStatus",
+          "ec2:DescribeTags"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+
+
 # Attach SSM managed policy for Session Manager (optional, but recommended)
 resource "aws_iam_role_policy_attachment" "bastion_ssm" {
   role       = aws_iam_role.bastion.name
@@ -107,7 +159,13 @@ resource "aws_launch_template" "bastion" {
     delete_on_termination       = true
   }
 
-  user_data = base64encode(file("${path.module}/user_data.sh"))
+  user_data = base64encode(templatefile("${path.module}/user_data.sh", {
+  s3_bucket_name = var.s3_bucket_name
+  s3_key_prefix  = var.s3_key_prefix
+  project_name   = var.project_name
+  environment    = var.environment
+  region         = var.region
+}))
 
   metadata_options {
     http_endpoint               = "enabled"
@@ -221,5 +279,4 @@ resource "aws_eip" "bastion" {
   }
 }
 
-# ------------------------------------------------------------------------------
-# Lambda function to associate EIP with bastion instance
+

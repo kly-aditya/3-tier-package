@@ -33,6 +33,11 @@ output "ssh_command" {
   value       = "ssh -i ~/.ssh/${var.key_name}.pem ec2-user@${aws_eip.bastion.public_ip}"
 }
 
+output "iam_role_arn" {
+  description = "ARN of the bastion IAM role (for S3 key access)"
+  value       = aws_iam_role.bastion.arn
+}
+
 output "bastion_summary" {
   description = "Summary of bastion deployment"
   value = {
