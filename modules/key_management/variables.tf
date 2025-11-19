@@ -24,8 +24,3 @@ variable "s3_key_prefix" {
 }
 
 
-variable "bastion_iam_role_arn" {
-  description = "IAM role ARN of bastion host (for S3  bucket policy)"
-  type        = string
-}
-

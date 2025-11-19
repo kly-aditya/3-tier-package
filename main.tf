@@ -326,8 +326,6 @@ module "key_management" {
   environment          = var.environment
   s3_bucket_name       = var.s3_bucket_name
   s3_key_prefix        = var.s3_key_prefix
-   bastion_iam_role_arn = "arn:aws:iam::123456789012:role/temp"
-  
    
 }
 

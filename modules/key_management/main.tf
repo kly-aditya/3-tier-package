@@ -157,7 +157,8 @@ resource "aws_s3_bucket_policy" "key_access" {
         Principal = "*"
         Action = "s3:*"
         Resource = [
-          "arn:aws:s3:::${var.s3_bucket_name}/${var.s3_key_prefix}/*"
+          "arn:aws:s3:::${var.s3_bucket_name}",
+          "arn:aws:s3:::${var.s3_bucket_name}/*"
         ]
         Condition = {
           Bool = {
@@ -165,21 +166,7 @@ resource "aws_s3_bucket_policy" "key_access" {
           }
         }
       },
-      {
-        Sid    = "AllowBastionInstanceAccess"
-        Effect = "Allow"
-        Principal = {
-          AWS = var.bastion_iam_role_arn
-        }
-        Action = [
-          "s3:GetObject",
-          "s3:ListBucket"
-        ]
-        Resource = [
-          "arn:aws:s3:::${var.s3_bucket_name}/${var.s3_key_prefix}/web/*",
-          "arn:aws:s3:::${var.s3_bucket_name}/${var.s3_key_prefix}/app/*"
-        ]
-      },
+      
       {
         Sid    = "AllowTerraformUserAccess"
         Effect = "Allow"
