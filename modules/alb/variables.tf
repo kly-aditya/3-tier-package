@@ -1,5 +1,5 @@
 # ==============================================================================
-# WEB ALB MODULE - VARIABLES
+# FLEXIBLE ALB MODULE - VARIABLES
 # ==============================================================================
 
 variable "project_name" {
@@ -9,6 +9,11 @@ variable "project_name" {
 
 variable "environment" {
   description = "Environment name (e.g., production, staging)"
+  type        = string
+}
+
+variable "tier_name" {
+  description = "Tier name (e.g., web, app) - used in resource naming"
   type        = string
 }
 
@@ -27,13 +32,13 @@ variable "vpc_id" {
   type        = string
 }
 
-variable "public_subnet_ids" {
-  description = "List of public subnet IDs for ALB"
+variable "subnet_ids" {
+  description = "List of subnet IDs for ALB (public for web, private for app)"
   type        = list(string)
 }
 
-variable "web_alb_sg_id" {
-  description = "Security group ID for web ALB"
+variable "alb_sg_id" {
+  description = "Security group ID for ALB"
   type        = string
 }
 
@@ -41,14 +46,20 @@ variable "web_alb_sg_id" {
 # AUTO SCALING GROUP
 # ------------------------------------------------------------------------------
 
-variable "web_asg_name" {
-  description = "Name of the web tier Auto Scaling Group"
+variable "asg_name" {
+  description = "Name of the Auto Scaling Group to attach"
   type        = string
 }
 
 # ------------------------------------------------------------------------------
 # ALB CONFIGURATION
 # ------------------------------------------------------------------------------
+
+variable "internal" {
+  description = "Whether the ALB is internal (true) or internet-facing (false)"
+  type        = bool
+  default     = false
+}
 
 variable "enable_deletion_protection" {
   description = "Enable deletion protection for ALB"
@@ -57,7 +68,22 @@ variable "enable_deletion_protection" {
 }
 
 # ------------------------------------------------------------------------------
-# TARGET GROUP & HEALTH CHECK
+# TARGET GROUP & PORTS
+# ------------------------------------------------------------------------------
+
+variable "target_port" {
+  description = "Port on which targets receive traffic"
+  type        = number
+}
+
+variable "listener_port" {
+  description = "Port on which the ALB listens"
+  type        = number
+  default     = 80
+}
+
+# ------------------------------------------------------------------------------
+# HEALTH CHECK
 # ------------------------------------------------------------------------------
 
 variable "health_check_path" {

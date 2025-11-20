@@ -506,3 +506,25 @@ output "ssh_keys_s3_locations" {
   description = "S3 locations of SSH private keys"
   value       = module.key_management.keys_s3_location
 }
+
+# Add this to outputs.tf
+
+output "app_alb_dns_name" {
+  description = "DNS name of the internal app ALB"
+  value       = module.app_alb.alb_dns_name
+}
+
+output "app_alb_zone_id" {
+  description = "Zone ID of the app ALB"
+  value       = module.app_alb.alb_zone_id
+}
+
+output "app_alb_arn" {
+  description = "ARN of the app ALB"
+  value       = module.app_alb.alb_arn
+}
+
+output "app_target_group_arn" {
+  description = "ARN of the app target group"
+  value       = module.app_alb.target_group_arn
+}

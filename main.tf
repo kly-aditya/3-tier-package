@@ -328,7 +328,8 @@ module "key_management" {
   s3_key_prefix        = var.s3_key_prefix
    
 }
-
+  
+  
 
 # Step 3: Deploy Bastion
 module "bastion" {
@@ -443,7 +444,8 @@ ssh_key_name = module.key_management.web_key_pair_name
 
 
 
-# PHASE 7: WEB APPLICATION LOAD BALANCER
+# ==============================================================================
+# PHASE : WEB APPLICATION LOAD BALANCER (Internet-facing)
 # ==============================================================================
 
 module "web_alb" {
@@ -451,17 +453,24 @@ module "web_alb" {
 
   project_name = var.project_name
   environment  = var.environment
+  tier_name    = "web"
+  common_tags  = local.common_tags
 
   # Networking
-  vpc_id             = aws_vpc.main.id
-  public_subnet_ids  = aws_subnet.public[*].id
-  web_alb_sg_id      = module.security.web_alb_security_group_id
-
-  # Auto Scaling Group
-  web_asg_name = module.web.autoscaling_group_name
+  vpc_id      = aws_vpc.main.id
+  subnet_ids  = aws_subnet.public[*].id
+  alb_sg_id   = module.security.web_alb_security_group_id
 
   # ALB Configuration
+  internal = false  # Internet-facing
   enable_deletion_protection = var.alb_enable_deletion_protection
+
+  # Target Configuration
+  target_port   = 80
+  listener_port = 80
+
+  # Auto Scaling Group
+  asg_name = module.web.autoscaling_group_name
 
   # Health Check
   health_check_path                = var.alb_health_check_path
@@ -472,10 +481,59 @@ module "web_alb" {
   deregistration_delay             = var.alb_deregistration_delay
 
   # Stickiness
-  enable_stickiness    = var.alb_enable_stickiness
-  stickiness_duration  = var.alb_stickiness_duration
+  enable_stickiness   = var.alb_enable_stickiness
+  stickiness_duration = var.alb_stickiness_duration
 
-  common_tags = local.common_tags
+  depends_on = [
+    module.security,
+    module.web
+  ]
+}
+
+# ==============================================================================
+# PHASE : APP APPLICATION LOAD BALANCER (Internal)
+# ==============================================================================
+
+module "app_alb" {
+  source = "./modules/alb"
+
+  project_name = var.project_name
+  environment  = var.environment
+  tier_name    = "app"
+  common_tags  = local.common_tags
+
+  # Networking
+  vpc_id      = aws_vpc.main.id
+  subnet_ids  = aws_subnet.private_app[*].id
+  alb_sg_id   = module.security.app_alb_security_group_id
+
+  # ALB Configuration
+  internal = true  # Internal
+  enable_deletion_protection = var.alb_enable_deletion_protection
+
+  # Target Configuration
+  target_port   = 3000  # Node.js
+  listener_port = 80
+
+  # Auto Scaling Group
+  asg_name = module.app.autoscaling_group_name
+
+  # Health Check
+  health_check_path                = var.alb_health_check_path
+  health_check_interval            = var.alb_health_check_interval
+  health_check_timeout             = var.alb_health_check_timeout
+  health_check_healthy_threshold   = var.alb_health_check_healthy_threshold
+  health_check_unhealthy_threshold = var.alb_health_check_unhealthy_threshold
+  deregistration_delay             = var.alb_deregistration_delay
+
+  # Stickiness
+  enable_stickiness   = var.alb_enable_stickiness
+  stickiness_duration = var.alb_stickiness_duration
+
+  depends_on = [
+    module.security,
+    module.app
+  ]
 }
 
 

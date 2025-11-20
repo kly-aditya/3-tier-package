@@ -10,19 +10,6 @@
 # APP TIER INGRESS RULES
 # ------------------------------------------------------------------------------
 
-# Allow app traffic (port 3000) from App ALB Security Group
-resource "aws_vpc_security_group_ingress_rule" "app_from_app_alb" {
-  security_group_id            = aws_security_group.app.id
-  description                  = "Allow app traffic from App ALB"
-  from_port                    = 3000
-  to_port                      = 3000
-  ip_protocol                  = "tcp"
-  referenced_security_group_id = aws_security_group.app_alb.id
-
-  tags = {
-    Name = "${var.project_name}-${var.environment}-app-from-app-alb"
-  }
-}
 
 # Allow SSH from Bastion Security Group
 resource "aws_vpc_security_group_ingress_rule" "app_from_bastion" {

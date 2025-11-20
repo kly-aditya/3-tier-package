@@ -4,6 +4,7 @@ keys/
 *.key
 
 # Terraform
+
 *.tfstate
 *.tfstate.*
 .terraform/

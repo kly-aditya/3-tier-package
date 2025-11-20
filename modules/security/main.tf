@@ -49,31 +49,7 @@ resource "aws_security_group" "web" {
   }
 }
 
-# ------------------------------------------------------------------------------
-# 3. App ALB Security Group
-# ------------------------------------------------------------------------------
-# Purpose: Controls traffic to internal App Application Load Balancer
-# Future Rules (Phase 8): HTTP/Custom port from Web Tier SG
 
-resource "aws_security_group" "app_alb" {
-  name_prefix = "${var.project_name}-${var.environment}-app-alb-"
-  description = "Security group for App Tier Application Load Balancer (Internal)"
-  vpc_id      = var.vpc_id
-
-  tags = merge(
-    var.tags,
-    {
-      Name      = "${var.project_name}-${var.environment}-app-alb-sg"
-      Tier      = "private"
-      Component = "app-load-balancer"
-      Phase     = "3"
-    }
-  )
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
 
 # ------------------------------------------------------------------------------
 # 4. App Tier Security Group
@@ -152,3 +128,80 @@ resource "aws_security_group" "bastion" {
     create_before_destroy = true
   }
 }
+
+# APP ALB SECURITY GROUP
+# ------------------------------------------------------------------------------
+
+resource "aws_security_group" "app_alb" {
+  name_prefix = "${var.project_name}-${var.environment}-app-alb-sg-"
+  description = "Security group for internal app ALB"
+  vpc_id      = var.vpc_id
+
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.project_name}-${var.environment}-app-alb-sg"
+      Tier = "app-alb"
+      
+    }
+  )
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+# Inbound: Allow HTTP from Web Security Group
+resource "aws_security_group_rule" "app_alb_inbound_from_web" {
+  type                     = "ingress"
+  from_port                = 80
+  to_port                  = 80
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.web.id
+  security_group_id        = aws_security_group.app_alb.id
+  description              = "Allow HTTP from Web tier"
+}
+
+# Outbound: Allow HTTP to App Security Group on port 3000
+resource "aws_security_group_rule" "app_alb_outbound_to_app" {
+  type                     = "egress"
+  from_port                = 3000
+  to_port                  = 3000
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.app.id
+  security_group_id        = aws_security_group.app_alb.id
+  description              = "Allow HTTP to App tier on port 3000"
+}
+
+# ------------------------------------------------------------------------------
+# UPDATE APP SECURITY GROUP - Add rule to allow traffic from App ALB
+# ------------------------------------------------------------------------------
+
+resource "aws_security_group_rule" "app_inbound_from_app_alb" {
+  type                     = "ingress"
+  from_port                = 3000
+  to_port                  = 3000
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.app_alb.id
+  security_group_id        = aws_security_group.app.id
+  description              = "Allow HTTP from App ALB on port 3000"
+}
+
+# ------------------------------------------------------------------------------
+# UPDATE WEB SECURITY GROUP - Add rule to allow outbound to App ALB
+# ------------------------------------------------------------------------------
+
+resource "aws_security_group_rule" "web_outbound_to_app_alb" {
+  type                     = "egress"
+  from_port                = 80
+  to_port                  = 80
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.app_alb.id
+  security_group_id        = aws_security_group.web.id
+  description              = "Allow HTTP to App ALB"
+}
+
+
+
+
+
