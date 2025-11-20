@@ -547,3 +547,18 @@ output "app_scaling_config" {
   description = "App tier auto scaling configuration"
   value       = module.app.scaling_configuration
 }
+
+
+
+# MONITORING OUTPUTS
+# ==============================================================================
+
+output "dashboard_url" {
+  description = "CloudWatch Dashboard URL"
+  value       = module.monitoring.dashboard_url
+}
+
+output "dashboard_name" {
+  description = "CloudWatch Dashboard Name"
+  value       = module.monitoring.dashboard_name
+}

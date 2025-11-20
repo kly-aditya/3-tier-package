@@ -640,3 +640,30 @@ resource "aws_wafv2_web_acl_association" "web_alb" {
   web_acl_arn  = module.security.waf_web_acl_arn
 }
 
+
+# MONITORING MODULE
+# ==============================================================================
+
+module "monitoring" {
+  source = "./modules/monitoring"
+
+  project_name = var.project_name
+  environment  = var.environment
+  aws_region   = var.aws_region
+
+  # Auto Scaling Groups
+  web_asg_name = module.web.autoscaling_group_name
+  app_asg_name = module.app.autoscaling_group_name
+
+  # Load Balancers
+  web_alb_arn_suffix         = module.web_alb.alb_arn_suffix
+  app_alb_arn_suffix         = module.app_alb.alb_arn_suffix
+  web_target_group_arn_suffix = module.web_alb.target_group_arn_suffix
+  app_target_group_arn_suffix = module.app_alb.target_group_arn_suffix
+
+  # RDS
+  rds_instance_id = module.database.db_instance_id
+
+  # Alarm thresholds (for dashboard annotations)
+  cpu_alarm_threshold = 80
+}
