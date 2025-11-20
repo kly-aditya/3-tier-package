@@ -314,6 +314,10 @@ module "security" {
   vpc_id           = aws_vpc.main.id
   allowed_ssh_cidr = var.my_ip
 
+  # WAF Configuration
+  enable_waf         = true
+  waf_rate_limit     = 2000
+  enable_waf_logging = false
   tags = local.common_tags
 }
 
@@ -625,3 +629,14 @@ module "cloudwatch" {
     module.app_alb
   ]
 }
+
+ # WAF ASSOCIATION (must be in root to avoid circular dependency)
+# ==============================================================================
+
+resource "aws_wafv2_web_acl_association" "web_alb" {
+  count = var.enable_waf ? 1 : 0
+
+  resource_arn = module.web_alb.alb_arn
+  web_acl_arn  = module.security.waf_web_acl_arn
+}
+

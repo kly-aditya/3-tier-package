@@ -411,3 +411,12 @@ variable "app_asg_max_size" {
   type        = number
   default     = 6
 }
+
+ # WAF CONFIGURATION
+# ==============================================================================
+
+variable "enable_waf" {
+  description = "Enable AWS WAF for web Application Load Balancer"
+  type        = bool
+  default     = true
+}
