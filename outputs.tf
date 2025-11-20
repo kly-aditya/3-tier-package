@@ -528,3 +528,22 @@ output "app_target_group_arn" {
   description = "ARN of the app target group"
   value       = module.app_alb.target_group_arn
 }
+
+# ==============================================================================
+# PHASE 10: CLOUDWATCH ALARMS OUTPUTS
+# ==============================================================================
+
+output "cloudwatch_alarms" {
+  description = "Summary of CloudWatch alarms"
+  value       = module.cloudwatch.alarm_summary
+}
+
+output "web_scaling_config" {
+  description = "Web tier auto scaling configuration"
+  value       = module.web.scaling_configuration
+}
+
+output "app_scaling_config" {
+  description = "App tier auto scaling configuration"
+  value       = module.app.scaling_configuration
+}

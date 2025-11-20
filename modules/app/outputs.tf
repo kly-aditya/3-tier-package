@@ -40,3 +40,43 @@ output "ami_id" {
   description = "AMI ID used for app instances"
   value       = data.aws_ami.amazon_linux_2023.id
 }
+
+
+# ==============================================================================
+# AUTO SCALING POLICY OUTPUTS - APP TIER
+# ==============================================================================
+
+
+output "autoscaling_policy_cpu_arn" {
+  description = "ARN of the CPU target tracking scaling policy"
+  value       = aws_autoscaling_policy.app_cpu_target_tracking.arn
+}
+
+output "autoscaling_policy_cpu_name" {
+  description = "Name of the CPU target tracking scaling policy"
+  value       = aws_autoscaling_policy.app_cpu_target_tracking.name
+}
+
+output "autoscaling_policy_alb_arn" {
+  description = "ARN of the ALB request count scaling policy"
+  value       = var.enable_alb_request_scaling ? aws_autoscaling_policy.app_alb_request_count[0].arn : null
+}
+
+output "autoscaling_policy_alb_name" {
+  description = "Name of the ALB request count scaling policy"
+  value       = var.enable_alb_request_scaling ? aws_autoscaling_policy.app_alb_request_count[0].name : null
+}
+
+output "scaling_configuration" {
+  description = "Summary of auto scaling configuration"
+  value = {
+    min_size                 = var.min_size
+    max_size                 = var.max_size
+    desired_capacity         = var.desired_capacity
+    target_cpu               = var.target_cpu_utilization
+    target_requests          = var.target_requests_per_instance
+    scale_out_cooldown_sec   = var.scale_out_cooldown
+    scale_in_cooldown_sec    = var.scale_in_cooldown
+    health_check_grace_sec   = var.health_check_grace_period
+  }
+}

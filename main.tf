@@ -431,6 +431,9 @@ module "web" {
   asg_desired_capacity = var.web_asg_desired_capacity
   asg_max_size         = var.web_asg_max_size
 
+
+  enable_alb_request_scaling = false
+
 ssh_key_name = module.key_management.web_key_pair_name
 
   common_tags = local.common_tags
@@ -564,6 +567,7 @@ module "app" {
   asg_min_size         = var.app_asg_min_size
   asg_desired_capacity = var.app_asg_desired_capacity
   asg_max_size         = var.app_asg_max_size
+  enable_alb_request_scaling = false
 
 ssh_key_name = module.key_management.app_key_pair_name
 
@@ -577,3 +581,47 @@ ssh_key_name = module.key_management.app_key_pair_name
   ]
 }
 
+
+# ==============================================================================
+
+# ==============================================================================
+# PHASE 10: CLOUDWATCH ALARMS
+# ==============================================================================
+
+module "cloudwatch" {
+  source = "./modules/cloudwatch"
+
+  project_name = var.project_name
+  environment  = var.environment
+  common_tags  = local.common_tags
+
+  # Auto Scaling Groups
+  web_asg_name = module.web.autoscaling_group_name
+  app_asg_name = module.app.autoscaling_group_name
+
+  # ALB ARN Suffixes (for CloudWatch metrics)
+  web_alb_arn_suffix = module.web_alb.alb_arn_suffix
+  app_alb_arn_suffix = module.app_alb.alb_arn_suffix
+  
+  web_target_group_arn_suffix = module.web_alb.target_group_arn_suffix
+  app_target_group_arn_suffix = module.app_alb.target_group_arn_suffix
+
+  # RDS Alarms (optional)
+  enable_rds_alarms = false  # Set to true to enable
+  # rds_instance_id = module.database.db_instance_id  # Uncomment if enabled
+
+  # Alarm Thresholds
+  high_cpu_threshold       = 80   # %
+  response_time_threshold  = 2    # seconds
+  error_5xx_threshold      = 10   # count
+
+  # Alarm Actions (empty for now - add SNS topic ARNs later)
+  alarm_actions = []
+
+  depends_on = [
+    module.web,
+    module.app,
+    module.web_alb,
+    module.app_alb
+  ]
+}

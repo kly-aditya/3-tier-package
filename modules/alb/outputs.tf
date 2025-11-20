@@ -41,3 +41,14 @@ output "listener_arn" {
   description = "ARN of the HTTP listener"
   value       = aws_lb_listener.http.arn
 }
+
+
+output "alb_arn_suffix" {
+  description = "ARN suffix of the ALB (for CloudWatch metrics)"
+  value       = split(":", aws_lb.this.arn)[5]
+}
+
+output "target_group_arn_suffix" {
+  description = "ARN suffix of the target group (for CloudWatch metrics)"
+  value       = split(":", aws_lb_target_group.this.arn)[5]
+}

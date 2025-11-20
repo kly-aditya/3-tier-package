@@ -181,7 +181,7 @@ resource "aws_autoscaling_group" "web" {
   max_size         = var.asg_max_size
 
   health_check_type         = "EC2"  # Will add ELB after Phase 7
-  health_check_grace_period = 300
+  health_check_grace_period = var.health_check_grace_period
 
   launch_template {
     id      = aws_launch_template.web.id
