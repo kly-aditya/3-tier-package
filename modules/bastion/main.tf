@@ -139,75 +139,65 @@ resource "aws_iam_instance_profile" "bastion" {
 }
 
 # ------------------------------------------------------------------------------
-# Launch Template
+# EC2 Instance - Single Bastion Host
 # ------------------------------------------------------------------------------
 
-resource "aws_launch_template" "bastion" {
-  name_prefix   = "${var.project_name}-${var.environment}-bastion-"
-  description   = "Launch template for Bastion host"
-  image_id      = data.aws_ami.amazon_linux_2023.id
+resource "aws_instance" "bastion" {
+  ami           = data.aws_ami.amazon_linux_2023.id
   instance_type = var.instance_type
   key_name      = var.key_name
+  
+  # Network configuration
+  subnet_id                   = var.public_subnet_ids[0]
+  vpc_security_group_ids      = [var.bastion_security_group_id]
+  associate_public_ip_address = true
 
-  iam_instance_profile {
-    arn = aws_iam_instance_profile.bastion.arn
-  }
+  # IAM role
+  iam_instance_profile = aws_iam_instance_profile.bastion.name
 
-  network_interfaces {
-    associate_public_ip_address = true
-    security_groups             = [var.bastion_security_group_id]
-    delete_on_termination       = true
-  }
-
+  # User data script
   user_data = base64encode(templatefile("${path.module}/user_data.sh", {
-  s3_bucket_name = var.s3_bucket_name
-  s3_key_prefix  = var.s3_key_prefix
-  project_name   = var.project_name
-  environment    = var.environment
-  region         = var.region
-}))
+    s3_bucket_name = var.s3_bucket_name
+    s3_key_prefix  = var.s3_key_prefix
+    project_name   = var.project_name
+    environment    = var.environment
+    region         = var.region
+  }))
 
+  # IMDSv2 (security best practice)
   metadata_options {
     http_endpoint               = "enabled"
-    http_tokens                 = "required"  # IMDSv2 only
+    http_tokens                 = "required"
     http_put_response_hop_limit = 1
     instance_metadata_tags      = "enabled"
   }
 
-  monitoring {
-    enabled = true
+  # Enable detailed monitoring
+  monitoring = true
+
+  # Root volume
+  root_block_device {
+    volume_type           = "gp3"
+    volume_size           = 20
+    delete_on_termination = true
+    encrypted             = true
   }
 
-  tag_specifications {
-    resource_type = "instance"
-    tags = merge(
-      var.tags,
-      {
-        Name      = "${var.project_name}-${var.environment}-bastion"
-        Component = "bastion"
-        Phase     = "4"
-      }
-    )
-  }
-
-  tag_specifications {
-    resource_type = "volume"
-    tags = merge(
-      var.tags,
-      {
-        Name      = "${var.project_name}-${var.environment}-bastion-volume"
-        Component = "bastion"
-        Phase     = "4"
-      }
-    )
-  }
-
+  # Tags
   tags = merge(
     var.tags,
     {
-      Name      = "${var.project_name}-${var.environment}-bastion-lt"
+      Name      = "${var.project_name}-${var.environment}-bastion"
       Component = "bastion"
       Phase     = "4"
+    }
+  )
+
+  volume_tags = merge(
+    var.tags,
+    {
+      Name      = "${var.project_name}-${var.environment}-bastion-volume"
+      Component = "bastion"
     }
   )
 
@@ -217,53 +207,12 @@ resource "aws_launch_template" "bastion" {
 }
 
 # ------------------------------------------------------------------------------
-# Auto Scaling Group (for high availability)
-# ------------------------------------------------------------------------------
-
-resource "aws_autoscaling_group" "bastion" {
-  name_prefix         = "${var.project_name}-${var.environment}-bastion-"
-  desired_capacity    = 1
-  min_size            = 1
-  max_size            = 1
-  vpc_zone_identifier = var.public_subnet_ids
-  health_check_type   = "EC2"
-  health_check_grace_period = 300
-
-  launch_template {
-    id      = aws_launch_template.bastion.id
-    version = "$Latest"
-  }
-
-  tag {
-    key                 = "Name"
-    value               = "${var.project_name}-${var.environment}-bastion-asg"
-    propagate_at_launch = false
-  }
-
-  tag {
-    key                 = "Component"
-    value               = "bastion"
-    propagate_at_launch = false
-  }
-
-  tag {
-    key                 = "Phase"
-    value               = "4"
-    propagate_at_launch = false
-  }
-
-  lifecycle {
-    create_before_destroy = true
-    ignore_changes        = [desired_capacity]
-  }
-}
-
-# ------------------------------------------------------------------------------
-# Elastic IP for Bastion
+# Elastic IP - Automatically Attached to Bastion Instance
 # ------------------------------------------------------------------------------
 
 resource "aws_eip" "bastion" {
-  domain = "vpc"
+  instance = aws_instance.bastion.id
+  domain   = "vpc"
 
   tags = merge(
     var.tags,
@@ -274,9 +223,7 @@ resource "aws_eip" "bastion" {
     }
   )
 
-  lifecycle {
-    create_before_destroy = true
-  }
+  depends_on = [aws_instance.bastion]
 }
 
 

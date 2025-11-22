@@ -25,3 +25,6 @@ Thumbs.db
 *.swp
 *.swo
 *~
+# Testing folder (not for GitLab)
+testing/
+*.log

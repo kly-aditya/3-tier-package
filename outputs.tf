@@ -218,72 +218,71 @@ output "phase3_summary" {
 # Phase 4 Outputs - Bastion with Automated Key Pair
 # ==============================================================================
 
-# Key Pair Outputs
+# ==============================================================================
+# BASTION OUTPUTS - Simplified and Clear
+# ==============================================================================
+
 output "bastion_key_pair_name" {
   description = "Name of the bastion key pair"
   value       = module.key_management.bastion_key_pair_name
 }
 
-output "bastion_private_key_pem" {
-  description = "Private key in PEM format "
-  value       = module.key_management.bastion_private_key_pem
-  sensitive   = true
-}
-
-# Bastion Outputs
 output "bastion_public_ip" {
-  description = "Public IP address of bastion host"
+  description = "Bastion host public IP (stable EIP)"
   value       = module.bastion.bastion_eip
 }
 
+output "bastion_instance_id" {
+  description = "ID of the bastion EC2 instance"
+  value       = module.bastion.bastion_instance_id
+}
+
 output "bastion_ssh_command" {
-  description = "SSH command to connect to bastion (after saving private key)"
-  value       = "ssh -i ~/.ssh/${var.project_name}-bastion-key.pem ec2-user@${module.bastion.bastion_eip}"
+  description = "SSH command to connect to bastion"
+  value       = "ssh -i keys/${var.project_name}-${var.environment}-bastion-key.pem ec2-user@${module.bastion.bastion_eip}"
 }
 
-output "bastion_asg_name" {
-  description = "Name of bastion Auto Scaling Group"
-  value       = module.bastion.bastion_asg_name
-}
-
-# Instructions Output
-output "save_private_key_instructions" {
-  description = "How to save your private key and connect"
+output "bastion_connection_info" {
+  description = "Bastion connection information"
   value       = <<-EOT
     
     ═══════════════════════════════════════════════════════════════
-    🔑 SAVE YOUR PRIVATE KEY (Do this immediately!)
+    🔑 BASTION SSH ACCESS
     ═══════════════════════════════════════════════════════════════
     
-    Step 1: Save the private key to a file:
-    ──────────────────────────────────────
-    terraform output -raw bastion_private_key_pem > ~/.ssh/${var.project_name}-bastion-key.pem
+    SSH Key Location:
+    ─────────────────
+    keys/${var.project_name}-${var.environment}-bastion-key.pem
     
-    Step 2: Set correct permissions:
-    ────────────────────────────────
-    chmod 400 ~/.ssh/${var.project_name}-bastion-key.pem
+    Bastion IP (Stable EIP):
+    ────────────────────────
+    ${module.bastion.bastion_eip}
     
-    Step 3: Connect to bastion:
-    ───────────────────────────
-    ssh -i ~/.ssh/${var.project_name}-bastion-key.pem ec2-user@${module.bastion.bastion_eip}
+    Connect to Bastion:
+    ───────────────────
+    ssh -i keys/${var.project_name}-${var.environment}-bastion-key.pem ec2-user@${module.bastion.bastion_eip}
     
-    ⚠️  IMPORTANT: Save this key NOW! It's only available in Terraform state.
+    ✅ SSH keys are saved locally in keys/ directory
+    ✅ SSH keys are backed up to S3
+    ✅ EIP is automatically attached to bastion
     
     ═══════════════════════════════════════════════════════════════
   EOT
 }
 
-# Summary
 output "phase4_summary" {
   description = "Summary of Phase 4 deployment"
   value = {
-    bastion_public_ip  = module.bastion.bastion_eip
-    instance_type      = "t3.micro"
-    key_pair_name      = module.key_management.bastion_key_pair_name
-    cost_per_month     = "~$8 (t3.micro)"
-    security_group_id  = module.security.bastion_security_group_id
-    ssh_access_from    = var.my_ip
-    note               = "Private key is in Terraform state - extract it immediately!"
+    bastion_instance_id = module.bastion.bastion_instance_id
+    bastion_public_ip   = module.bastion.bastion_eip
+    instance_type       = "t3.micro"
+    key_pair_name       = module.key_management.bastion_key_pair_name
+    ssh_key_location    = "keys/${var.project_name}-${var.environment}-bastion-key.pem"
+    cost_per_month      = "~$8 (t3.micro)"
+    security_group_id   = module.security.bastion_security_group_id
+    ssh_access_from     = var.my_ip
+    deployment_type     = "single-instance"
+    note                = "EIP automatically attached | SSH keys in keys/ directory"
   }
 }
 
@@ -309,6 +308,11 @@ output "db_instance_port" {
 output "db_name" {
   description = "Name of the database"
   value       = module.database.db_name
+}
+
+output "db_master_username" {
+  description = "Master username for the database"
+  value       = var.db_master_username
 }
 
 # ------------------------------------------------------------------------------

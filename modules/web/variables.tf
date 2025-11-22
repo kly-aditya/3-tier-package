@@ -160,3 +160,4 @@ variable "alb_target_group_arn_suffix" {
   type        = string
   default     = ""
 }
+
