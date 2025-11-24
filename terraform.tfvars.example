@@ -1,94 +1,118 @@
 # ============================================================================
-# Terraform Variables - Example Template
+# AWS 3-Tier Architecture - Configuration Template
 # ============================================================================
-# Copy this file to terraform.tfvars and fill in your actual values
-# ============================================================================
-
-# ----------------------------------------------------------------------------
-# Project Configuration
-# ----------------------------------------------------------------------------
-
-project_name = "your-project-name"     # e.g., "mycompany-app"
-environment  = "production"            # production, staging, or development
-aws_region   = "ap-southeast-1"        # Singapore region
-owner_email  = "your-email@example.com"
-
-# ----------------------------------------------------------------------------
-# Network Configuration
-# ----------------------------------------------------------------------------
-
-vpc_cidr                 = "10.0.0.0/16"
-availability_zones_count = 3
-
-# ----------------------------------------------------------------------------
-# Feature Flags (for phased development)
-# ----------------------------------------------------------------------------
-
-enable_nat_gateway = false  # Set to true in Phase 2 (WARNING: Costs ~$100/month)
-enable_flow_logs   = true
-
-# ============================================================================
-# Variables to add in later phases:
+# INSTRUCTIONS:
+# 1. Copy this file: cp terraform.tfvars.example terraform.tfvars
+# 2. Edit terraform.tfvars with your actual values
+# 3. DO NOT commit terraform.tfvars to Git (it's in .gitignore)
 # ============================================================================
 
-# Phase 4: Bastion Host
-# key_name = "your-ssh-key-name"          # EC2 key pair name
-# admin_ip = "203.0.113.0/32"             # Your IP address for SSH access
+# ----------------------------------------------------------------------------
+# REQUIRED: Project Configuration
+# ----------------------------------------------------------------------------
 
-# Phase 5: RDS Database  
-# db_instance_class = "db.t3.medium"
-# db_name          = "productiondb"
-# db_username      = "dbadmin"
-# db_password      = "SecurePassword123!"  # Use AWS Secrets Manager in production!
+project_name = "mycompany-prod"        # Your project name (lowercase, no spaces)
+environment  = "production"            # Environment: production, staging, or development
+aws_region   = "ap-southeast-1"        # AWS Region (Singapore)
 
-# Phase 6-8: Compute Tiers
-# web_tier_instance_type = "t3.medium"
-# web_tier_min_size      = 2
-# web_tier_max_size      = 10
-# web_tier_desired_size  = 2
+# ----------------------------------------------------------------------------
+# REQUIRED: Network Configuration
+# ----------------------------------------------------------------------------
 
-# app_tier_instance_type = "t3.medium"
-# app_tier_min_size      = 2
-# app_tier_max_size      = 10
-# app_tier_desired_size  = 2
+vpc_cidr                 = "10.0.0.0/16"  # VPC CIDR block
+availability_zones_count = 3              # Number of AZs (recommended: 3 for HA)
 
-# bastion_instance_type = "t3.micro"
+# ----------------------------------------------------------------------------
+# REQUIRED: Feature Flags
+# ----------------------------------------------------------------------------
 
-# Phase 10: WAF
-# enable_waf      = true
-# waf_rate_limit  = 2000
+enable_nat_gateway = true              # Enable NAT Gateways (REQUIRED for private subnet internet access)
+                                       # Cost: ~$96/month for 3 NAT Gateways
+enable_flow_logs   = true              # Enable VPC Flow Logs (recommended for security)
 
-# Phase 11: Monitoring
-# cloudwatch_retention_days    = 30
-# enable_detailed_monitoring   = true
-# alarm_email                 = "alerts@example.com"
+# ----------------------------------------------------------------------------
+# REQUIRED: SSH Key Storage
+# ----------------------------------------------------------------------------
 
+ssh_key_s3_bucket = "your-s3-bucket-name"  # S3 bucket for SSH key backup
+                                            # This bucket must already exist
+                                            # Create with: aws s3 mb s3://your-bucket-name
 
+# ----------------------------------------------------------------------------
+# OPTIONAL: SSH Access Control
+# ----------------------------------------------------------------------------
 
-# Database Configuration
+# my_ip = "YOUR_PUBLIC_IP/32"            # Your public IP for SSH to bastion
+                                         # Get your IP: curl ifconfig.me
+                                         # Example: my_ip = "203.0.113.45/32"
+
+# ----------------------------------------------------------------------------
+# REQUIRED: Database Configuration
 # ------------------------------------------------------------------------------
 
-db_instance_class               = "db.t3.micro"
-db_name                         = "appdb"
-db_master_username              = "dbadmin"
-postgres_version                = "15.8"
-postgres_major_version          = "15"
-db_allocated_storage            = 20
-db_max_allocated_storage        = 100
-db_storage_type                 = "gp3"
-db_multi_az                     = true
-db_backup_retention_days        = 7
-db_backup_window                = "03:00-04:00"
-db_maintenance_window           = "Mon:04:00-Mon:05:00"
-db_skip_final_snapshot          = true  # Set to false for production!
-db_monitoring_interval          = 60
-db_performance_insights_enabled = true
-db_performance_insights_retention = 7
-db_log_retention_days           = 7
-db_max_connections              = "100"
-db_log_statement                = "ddl"
-db_log_min_duration_ms          = "1000"
-db_deletion_protection          = false  # Set to true for production!
-db_auto_minor_version_upgrade   = true
+db_instance_class               = "db.t3.micro"    # Instance type (start small, scale up)
+db_name                         = "appdb"          # Database name
+db_master_username              = "dbadmin"        # Master username
+postgres_version                = "15"             # PostgreSQL version
+postgres_major_version          = "15"             # Major version
+db_allocated_storage            = 20               # Initial storage (GB)
+db_max_allocated_storage        = 100              # Max autoscaling storage (GB)
+db_storage_type                 = "gp3"            # Storage type (gp3 recommended)
+db_multi_az                     = true             # Multi-AZ for high availability
+db_backup_retention_days        = 7                # Backup retention (days)
+db_backup_window                = "03:00-04:00"    # Backup window (UTC)
+db_maintenance_window           = "Mon:04:00-Mon:05:00"  # Maintenance window (UTC)
+db_skip_final_snapshot          = true             # Skip final snapshot on delete (set false for prod!)
+db_monitoring_interval          = 60               # Enhanced monitoring interval (seconds)
+db_performance_insights_enabled = true             # Enable Performance Insights
+db_performance_insights_retention = 7              # Performance Insights retention (days)
+db_log_retention_days           = 7                # CloudWatch log retention (days)
+db_max_connections              = "100"            # Max database connections
+db_log_statement                = "ddl"            # Log DDL statements
+db_log_min_duration_ms          = "1000"           # Log queries slower than 1000ms
+db_deletion_protection          = false            # Deletion protection (set true for prod!)
+db_auto_minor_version_upgrade   = true             # Auto upgrade minor versions
+
+# ----------------------------------------------------------------------------
+# OPTIONAL: Web Tier Configuration
+# ----------------------------------------------------------------------------
+
+web_instance_type    = "t3.micro"      # Instance type (t3.micro, t3.small, t3.medium)
+web_root_volume_size = 30              # Root volume size (GB)
+
+# Auto Scaling Configuration
+web_asg_min_size         = 3           # Minimum instances (recommended: 3 for HA)
+web_asg_desired_capacity = 3           # Desired instances
+web_asg_max_size         = 6           # Maximum instances
+
+# ----------------------------------------------------------------------------
+# OPTIONAL: App Tier Configuration
+# ----------------------------------------------------------------------------
+
+# app_instance_type    = "t3.micro"    # Instance type
+# app_root_volume_size = 30            # Root volume size (GB)
+# app_asg_min_size         = 3         # Minimum instances
+# app_asg_desired_capacity = 3         # Desired instances
+# app_asg_max_size         = 6         # Maximum instances
+
+# ============================================================================
+# COST ESTIMATION
+# ============================================================================
+# With default values above, estimated monthly cost: ~$200-250 USD
+#
+# Breakdown:
+# - EC2 Instances (7x t3.micro):     ~$50
+# - NAT Gateways (3x):               ~$96
+# - RDS (db.t3.micro Multi-AZ):      ~$30
+# - Application Load Balancers (2x): ~$35
+# - EBS Volumes:                     ~$20
+# - Data Transfer:                   ~$10
+# - Other (CloudWatch, S3, etc):     ~$10
+#
+# To reduce costs:
+# - Use 1 NAT Gateway instead of 3 (reduces HA)
+# - Use smaller instance types
+# - Disable Multi-AZ for RDS (reduces HA)
+# ============================================================================
 
 

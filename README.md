@@ -6,10 +6,68 @@ A production-grade, highly available 3-tier web application infrastructure on AW
 
 This infrastructure implements a secure, scalable 3-tier architecture across 3 Availability Zones:
 
-```
-Internet → Web ALB → Web Tier → App ALB (Internal) → App Tier → RDS PostgreSQL
-                                                                         ↓
-                                                                   Multi-AZ
+```mermaid
+graph TB
+    Users[Internet Users]
+    IGW[Internet Gateway]
+    
+    subgraph VPC["VPC: 10.0.0.0/16"]
+        Bastion[Bastion Host]
+        WebALB[Web ALB<br/>Public]
+        AppALB[App ALB<br/>Internal]
+        
+        subgraph AZ1["Availability Zone A"]
+            PubSub1[Public Subnet<br/>10.0.1.0/24]
+            NAT1[NAT Gateway]
+            Web1[Web Instance]
+            AppSub1[App Subnet<br/>10.0.11.0/24]
+            App1[App Instance]
+            DBSub1[DB Subnet<br/>10.0.21.0/24]
+        end
+        
+        subgraph AZ2["Availability Zone B"]
+            PubSub2[Public Subnet<br/>10.0.2.0/24]
+            NAT2[NAT Gateway]
+            Web2[Web Instance]
+            AppSub2[App Subnet<br/>10.0.12.0/24]
+            App2[App Instance]
+            DBSub2[DB Subnet<br/>10.0.22.0/24]
+        end
+        
+        subgraph AZ3["Availability Zone C"]
+            PubSub3[Public Subnet<br/>10.0.3.0/24]
+            NAT3[NAT Gateway]
+            Web3[Web Instance]
+            AppSub3[App Subnet<br/>10.0.13.0/24]
+            App3[App Instance]
+            DBSub3[DB Subnet<br/>10.0.23.0/24]
+        end
+        
+        RDS[(RDS PostgreSQL<br/>Multi-AZ)]
+    end
+    
+    Users -->|HTTPS/HTTP| IGW
+    IGW --> WebALB
+    WebALB --> Web1 & Web2 & Web3
+    Web1 & Web2 & Web3 --> AppALB
+    AppALB --> App1 & App2 & App3
+    App1 & App2 & App3 --> RDS
+    RDS -.-> DBSub1 & DBSub2 & DBSub3
+    
+    Users -.->|SSH| Bastion
+    Bastion -.->|Management| Web1 & Web2 & Web3
+    Bastion -.->|Management| App1 & App2 & App3
+    
+    NAT1 & NAT2 & NAT3 -.->|Outbound| IGW
+    
+    style VPC fill:#E3F2FD
+    style AZ1 fill:#F5F5F5
+    style AZ2 fill:#F5F5F5
+    style AZ3 fill:#F5F5F5
+    style WebALB fill:#FF9800
+    style AppALB fill:#FF9800
+    style RDS fill:#2196F3
+    style Bastion fill:#4CAF50
 ```
 
 ### Components
@@ -39,7 +97,24 @@ Internet → Web ALB → Web Tier → App ALB (Internal) → App Tier → RDS Po
 - An AWS account with appropriate permissions
 - An S3 bucket for SSH key storage (configurable in `terraform.tfvars`)
 
+## 📚 Documentation
+
+**📖 [Complete Documentation Index](INDEX.md)** - Start here to find the right document for your needs
+
+### Quick Links
+
+| Document | Purpose | Audience |
+|----------|---------|----------|
+| **[GETTING_STARTED.md](GETTING_STARTED.md)** | For absolute beginners | New users |
+| **[PRE_DEPLOYMENT_CHECKLIST.md](PRE_DEPLOYMENT_CHECKLIST.md)** | Pre-deployment checklist | All users |
+| **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** | Complete deployment guide | DevOps/SysAdmin |
+| **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** | Command cheat sheet | All users |
+| **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** | Common issues & solutions | All users |
+| **[SUBMISSION_SUMMARY.md](SUBMISSION_SUMMARY.md)** | Project summary | Management/Review |
+
 ## Quick Start
+
+**⚠️ First time deploying? Start with [PRE_DEPLOYMENT_CHECKLIST.md](PRE_DEPLOYMENT_CHECKLIST.md)**
 
 ### 1. Clone and Configure
 
