@@ -4,48 +4,9 @@ A production-grade, highly available 3-tier web application infrastructure on AW
 
 ## Architecture Overview
 
-This infrastructure implements a secure, scalable 3-tier architecture across 3 Availability Zones:
+This infrastructure implements a secure, scalable 3-tier architecture across 3 Availability Zones.
 
-```
-Internet Users
-      ↓
-Internet Gateway
-      ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                    VPC: 10.0.0.0/16                              │
-│                                                                   │
-│  Bastion Host (SSH Access)                                       │
-│                                                                   │
-│                    Web ALB (Public)                              │
-│                           ↓                                       │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │     AZ-A     │  │     AZ-B     │  │     AZ-C     │          │
-│  │              │  │              │  │              │          │
-│  │ Public       │  │ Public       │  │ Public       │          │
-│  │ 10.0.1.0/24  │  │ 10.0.2.0/24  │  │ 10.0.3.0/24  │          │
-│  │ NAT Gateway  │  │ NAT Gateway  │  │ NAT Gateway  │          │
-│  │ Web Instance │  │ Web Instance │  │ Web Instance │          │
-│  │              │  │              │  │              │          │
-│  └──────────────┘  └──────────────┘  └──────────────┘          │
-│         ↓                 ↓                 ↓                    │
-│                    App ALB (Internal)                            │
-│         ↓                 ↓                 ↓                    │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │ App Private  │  │ App Private  │  │ App Private  │          │
-│  │ 10.0.11.0/24 │  │ 10.0.12.0/24 │  │ 10.0.13.0/24 │          │
-│  │ App Instance │  │ App Instance │  │ App Instance │          │
-│  │              │  │              │  │              │          │
-│  └──────────────┘  └──────────────┘  └──────────────┘          │
-│         ↓                 ↓                 ↓                    │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │ DB Private   │  │ DB Private   │  │ DB Private   │          │
-│  │ 10.0.21.0/24 │  │ 10.0.22.0/24 │  │ 10.0.23.0/24 │          │
-│  └──────────────┘  └──────────────┘  └──────────────┘          │
-│                           ↓                                       │
-│              RDS PostgreSQL (Multi-AZ)                           │
-│                                                                   │
-└───────────────────────────────────────────────────────────────────┘
-```
+**[Architecture Diagram - To be added]**
 
 ### Components
 
